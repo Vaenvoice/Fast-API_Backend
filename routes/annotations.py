@@ -1,28 +1,25 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
+from database import get_db
+from models import Annotation
+from schemas import AnnotationCreate, AnnotationResponse
 
 router = APIRouter()
 
-@router.get("/")
-async def get_annotations():
-    """Get all annotations"""
-    return {"message": "Annotations endpoint", "data": []}
 
-@router.post("/")
-async def create_annotation():
+@router.post("/", response_model=AnnotationResponse)
+async def create_annotation(annotation: AnnotationCreate, db: Session = Depends(get_db)):
     """Create a new annotation"""
-    return {"message": "Annotation created", "id": 1}
+    db_annotation = Annotation(**annotation.model_dump())
+    db.add(db_annotation)
+    db.commit()
+    db.refresh(db_annotation)
+    return db_annotation
 
-@router.get("/{annotation_id}")
-async def get_annotation(annotation_id: int):
-    """Get a specific annotation"""
-    return {"message": f"Annotation {annotation_id}", "id": annotation_id}
 
-@router.put("/{annotation_id}")
-async def update_annotation(annotation_id: int):
-    """Update an annotation"""
-    return {"message": f"Annotation {annotation_id} updated", "id": annotation_id}
-
-@router.delete("/{annotation_id}")
-async def delete_annotation(annotation_id: int):
-    """Delete an annotation"""
-    return {"message": f"Annotation {annotation_id} deleted", "id": annotation_id}
+@router.get("/{image_id}", response_model=List[AnnotationResponse])
+async def get_annotations_by_image(image_id: int, db: Session = Depends(get_db)):
+    """Get all annotations for a given image"""
+    annotations = db.query(Annotation).filter(Annotation.image_id == image_id).all()
+    return annotations
