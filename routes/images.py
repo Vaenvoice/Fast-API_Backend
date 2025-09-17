@@ -1,23 +1,25 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from typing import List
+from database import get_db
+from models import Image
+from schemas import ImageCreate, ImageResponse
 
 router = APIRouter()
 
-@router.get("/")
-async def get_images():
+
+@router.get("/", response_model=List[ImageResponse])
+async def get_images(db: Session = Depends(get_db)):
     """Get all images"""
-    return {"message": "Images endpoint", "data": []}
+    images = db.query(Image).all()
+    return images
 
-@router.post("/upload")
-async def upload_image(file: UploadFile = File(...)):
-    """Upload an image"""
-    return {"message": "Image uploaded", "filename": file.filename}
 
-@router.get("/{image_id}")
-async def get_image(image_id: int):
-    """Get a specific image"""
-    return {"message": f"Image {image_id}", "id": image_id}
-
-@router.delete("/{image_id}")
-async def delete_image(image_id: int):
-    """Delete an image"""
-    return {"message": f"Image {image_id} deleted", "id": image_id}
+@router.post("/", response_model=ImageResponse)
+async def create_image(image: ImageCreate, db: Session = Depends(get_db)):
+    """Add new image"""
+    db_image = Image(**image.model_dump())
+    db.add(db_image)
+    db.commit()
+    db.refresh(db_image)
+    return db_image
