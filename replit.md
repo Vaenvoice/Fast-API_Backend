@@ -36,11 +36,13 @@ Preferred communication style: Simple, everyday language.
 - **FastAPI**: Web framework for building the REST API
 - **Uvicorn**: ASGI server for running the FastAPI application
 - **Pydantic**: Data validation and settings management
+- **SQLAlchemy**: ORM for database operations and management
+- **psycopg2-binary**: PostgreSQL database adapter for Python
 
 ## Potential Integrations
 - **AI Services**: Architecture supports integration with OpenAI GPT models, Claude, or other LLM providers
 - **File Storage**: Current implementation handles file uploads, ready for cloud storage integration
-- **Database**: Architecture prepared for database integration for persistent storage of annotations and metadata
+- **Database**: Supabase PostgreSQL integration via SQLAlchemy ORM for persistent storage of annotations and metadata
 - **Frontend Applications**: CORS configuration allows integration with web frontends, mobile apps, or other client applications
 
 ## Development Tools
