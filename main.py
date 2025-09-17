@@ -24,7 +24,7 @@ app.add_middleware(
 @app.get("/health")
 async def health():
     """Health check endpoint"""
-    return {"status": "healthy", "message": "Service is running"}
+    return {"status": "ok"}
 
 # Mount routers
 app.include_router(annotations_router, prefix="/api/annotations", tags=["annotations"])
