@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from routes.annotations import router as annotations_router
 from routes.images import router as images_router
 from routes.export import router as export_router
@@ -11,10 +12,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Add CORS middleware
+# Allow all origins (frontend can access backend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # change to your frontend URL in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,15 +29,18 @@ async def root():
 # Health endpoint
 @app.get("/health")
 async def health():
-    """Health check endpoint"""
     return {"status": "ok"}
 
-# Mount routers
+# Mount API routers
 app.include_router(annotations_router, prefix="/api/annotations", tags=["annotations"])
 app.include_router(images_router, prefix="/api/images", tags=["images"])
 app.include_router(export_router, prefix="/api/export", tags=["export"])
 app.include_router(ai_router, prefix="/api/ai", tags=["ai"])
 
+# Serve static folder (for DZI tiles)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=5000)
+
