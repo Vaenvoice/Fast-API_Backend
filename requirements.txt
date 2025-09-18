@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 altair==5.5.0
 anyio==4.10.0
 argon2-cffi==25.1.0
@@ -134,7 +134,6 @@ webcolors==24.11.1
 webencodings==0.5.1
 websocket-client==1.8.0
 widgetsnbextension==4.0.14
-=======
 fastapi
 uvicorn
 sqlalchemy
@@ -143,4 +142,4 @@ supabase
 python-multipart
 pydantic
 python-dotenv
->>>>>>> 7db6405534dc130d6b9371e8f24c7282d06f270e
+7db6405534dc130d6b9371e8f24c7282d06f270e
