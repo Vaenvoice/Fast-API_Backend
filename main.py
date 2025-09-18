@@ -1,10 +1,16 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
+
+# Import your routers
 from routes.annotations import router as annotations_router
 from routes.images import router as images_router
 from routes.export import router as export_router
 from routes.ai import router as ai_router
+
+# Import DB utils
+from database import get_db
 
 app = FastAPI(
     title="FastAPI Project",
@@ -12,10 +18,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Allow all origins (frontend can access backend)
+# CORS middleware - allow frontend to access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # change to your frontend URL in production
+    allow_origins=["*"],  # Or put your frontend URL here
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -26,21 +32,31 @@ app.add_middleware(
 async def root():
     return {"msg": "Backend is running 🚀"}
 
-# Health endpoint
+# Health check endpoint
 @app.get("/health")
 async def health():
     return {"status": "ok"}
 
-# Mount API routers
+# Test DB connection
+@app.get("/test-db")
+def test_db(db: Session = Depends(get_db)):
+    try:
+        result = db.execute("SELECT 1")
+        return {"db_status": "ok", "result": result.scalar()}
+    except Exception as e:
+        return {"db_status": "error", "detail": str(e)}
+
+# Include routers
 app.include_router(annotations_router, prefix="/api/annotations", tags=["annotations"])
 app.include_router(images_router, prefix="/api/images", tags=["images"])
 app.include_router(export_router, prefix="/api/export", tags=["export"])
 app.include_router(ai_router, prefix="/api/ai", tags=["ai"])
 
-# Serve static folder (for DZI tiles)
+# Serve static folder for DZI tiles
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=5000)
+
 
