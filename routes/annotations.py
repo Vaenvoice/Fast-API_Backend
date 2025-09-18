@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from database import get_db
-from models import Annotation
+from models import Annotation, Image
 from schemas import AnnotationCreate, AnnotationResponse
 
 router = APIRouter()
@@ -11,6 +11,10 @@ router = APIRouter()
 @router.post("/", response_model=AnnotationResponse)
 async def create_annotation(annotation: AnnotationCreate, db: Session = Depends(get_db)):
     """Create a new annotation"""
+    # Ensure referenced image exists
+    image = db.query(Image).filter(Image.id == annotation.image_id).first()
+    if not image:
+        raise HTTPException(status_code=404, detail="Image not found")
     db_annotation = Annotation(**annotation.model_dump())
     db.add(db_annotation)
     db.commit()
@@ -20,6 +24,30 @@ async def create_annotation(annotation: AnnotationCreate, db: Session = Depends(
 
 @router.get("/{image_id}", response_model=List[AnnotationResponse])
 async def get_annotations_by_image(image_id: int, db: Session = Depends(get_db)):
-    """Get all annotations for a given image"""
     annotations = db.query(Annotation).filter(Annotation.image_id == image_id).all()
+    if not annotations:
+        raise HTTPException(status_code=404, detail="No annotations found for this image")
     return annotations
+
+
+# PUT /annotations/{id} - update annotation
+@router.put("/{id}", response_model=AnnotationResponse)
+def update_annotation(id: int, annotation: AnnotationCreate, db: Session = Depends(get_db)):
+    db_annotation = db.query(Annotation).filter(Annotation.id == id).first()
+    if not db_annotation:
+        raise HTTPException(status_code=404, detail="Annotation not found")
+    for key, value in annotation.model_dump().items():
+        setattr(db_annotation, key, value)
+    db.commit()
+    db.refresh(db_annotation)
+    return db_annotation
+
+# DELETE /annotations/{id} - delete annotation
+@router.delete("/{id}")
+def delete_annotation(id: int, db: Session = Depends(get_db)):
+    db_annotation = db.query(Annotation).filter(Annotation.id == id).first()
+    if not db_annotation:
+        raise HTTPException(status_code=404, detail="Annotation not found")
+    db.delete(db_annotation)
+    db.commit()
+    return {"detail": "Annotation deleted successfully"}

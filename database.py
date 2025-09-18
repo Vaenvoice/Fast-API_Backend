@@ -1,24 +1,23 @@
+# database.py
+from dotenv import load_dotenv
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Get database URL from environment variable
-DATABASE_URL = os.getenv("DATABASE_URL")
+# load .env
+load_dotenv()
 
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable is not set")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./test.db")
 
-# Create engine
-engine = create_engine(DATABASE_URL)
+# sqlite needs check_same_thread
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
-# Create sessionmaker
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Create Base class for models
 Base = declarative_base()
 
-# Dependency to get database session
+# dependency for FastAPI routes
 def get_db():
     db = SessionLocal()
     try:

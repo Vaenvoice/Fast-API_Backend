@@ -3,6 +3,15 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from database import Base
 
+class User(Base):
+    __tablename__= "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, nullable=False)
+
+    #relationships
+    annotations = relationship("Annotation", back_populates="user")
+
 
 class Image(Base):
     __tablename__ = "images"
@@ -10,7 +19,7 @@ class Image(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     mission = Column(String, nullable=False)
-    date = Column(Date, nullable=False)
+    date = Column(Date, nullable=True)
     url = Column(String, nullable=False)
     
     # Relationship to annotations
@@ -22,7 +31,8 @@ class Annotation(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     image_id = Column(Integer, ForeignKey("images.id"), nullable=False)
-    user_id = Column(String, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user = relationship("User", back_populates="annotations")
     label = Column(String, nullable=False)
     x = Column(Float, nullable=False)
     y = Column(Float, nullable=False)

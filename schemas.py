@@ -25,7 +25,7 @@ class ImageResponse(ImageBase):
 # Annotation schemas
 class AnnotationBase(BaseModel):
     image_id: int
-    user_id: str
+    user_id: int
     label: str
     x: float
     y: float

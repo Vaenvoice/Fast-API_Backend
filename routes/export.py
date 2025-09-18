@@ -15,7 +15,7 @@ router = APIRouter()
 @router.get("/{image_id}")
 async def export_annotations(
     image_id: int,
-    format: Literal["csv", "json"] = Query(..., description="Export format: csv or json"),
+    format: Literal["csv", "json"] = Query("json", description="Export format: csv or json"),
     db: Session = Depends(get_db)
 ):
     """Return annotations for an image in the requested format"""

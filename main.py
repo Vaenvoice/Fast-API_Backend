@@ -20,6 +20,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Root endpoint
+@app.get("/")
+async def root():
+    return {"msg": "Backend is running 🚀"}
+
 # Health endpoint
 @app.get("/health")
 async def health():
