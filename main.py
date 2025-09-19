@@ -11,6 +11,8 @@ from routes.ai import router as ai_router
 
 # Import DB utils
 from database import get_db
+from database import Base, engine   # ✅ ensure tables auto-create
+import models                       # ✅ import models so Base sees them
 
 app = FastAPI(
     title="FastAPI Project",
@@ -18,26 +20,34 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware - allow frontend to access
+# --- CORS Middleware ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Or put your frontend URL here
+    allow_origins=[
+        "http://localhost:5173",  # Local frontend (Vite)
+        "http://localhost:8080",  # Another dev port
+        "https://your-frontend.vercel.app",  # Replace with deployed frontend
+        "*"  # fallback for now
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Root endpoint
+# --- Auto-create DB tables ---
+Base.metadata.create_all(bind=engine)
+
+# --- Root endpoint ---
 @app.get("/")
 async def root():
     return {"msg": "Backend is running 🚀"}
 
-# Health check endpoint
+# --- Health check endpoint ---
 @app.get("/health")
 async def health():
     return {"status": "ok"}
 
-# Test DB connection
+# --- Test DB connection ---
 @app.get("/test-db")
 def test_db(db: Session = Depends(get_db)):
     try:
@@ -46,17 +56,16 @@ def test_db(db: Session = Depends(get_db)):
     except Exception as e:
         return {"db_status": "error", "detail": str(e)}
 
-# Include routers
+# --- Include routers ---
 app.include_router(annotations_router, prefix="/api/annotations", tags=["annotations"])
 app.include_router(images_router, prefix="/api/images", tags=["images"])
 app.include_router(export_router, prefix="/api/export", tags=["export"])
 app.include_router(ai_router, prefix="/api/ai", tags=["ai"])
 
-# Serve static folder for DZI tiles
+# --- Serve static folder for DZI tiles ---
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=5000)
-
 
