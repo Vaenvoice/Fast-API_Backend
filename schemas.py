@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import date, datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 
 # ---------------------------
 # Image Schemas
@@ -19,7 +19,7 @@ class ImageResponse(ImageBase):
     id: int
 
     class Config:
-        orm_mode = True  # ✅ This allows Pydantic to read from SQLAlchemy objects
+        orm_mode = True
 
 
 # ---------------------------
@@ -44,3 +44,35 @@ class AnnotationResponse(AnnotationBase):
 
     class Config:
         orm_mode = True
+
+
+# ---------------------------
+# Visit Schemas
+# ---------------------------
+
+class VisitResponse(BaseModel):
+    count: int
+
+    class Config:
+        orm_mode = True
+
+
+# ---------------------------
+# Event Schemas
+# ---------------------------
+
+class EventIn(BaseModel):
+    event_type: str
+    payload: Optional[Dict[str, Any]] = None
+    session_id: Optional[str] = None
+
+class EventResponse(BaseModel):
+    id: int
+    event_type: str
+    payload: Optional[Dict[str, Any]]
+    session_id: Optional[str]
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
